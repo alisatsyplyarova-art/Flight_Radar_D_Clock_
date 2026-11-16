@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flight Radar-D &amp; Clock — detailed manual</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+body { font: 11pt/1.5 "DejaVu Sans", "Liberation Sans", Arial, sans-serif; color:#14201b; margin:0; }
+h1 { font-size: 26pt; color:#0a5c3e; margin: 0 0 6pt; }
+h2 { font-size: 16pt; color:#0a5c3e; border-bottom: 2px solid #bfe6d4; padding-bottom:3pt; margin: 18pt 0 8pt; break-after: avoid; }
+h3 { font-size: 12.5pt; color:#1d6b4f; margin: 12pt 0 4pt; break-after: avoid; }
+p, li { break-inside: avoid; }
+ul, ol { margin: 4pt 0 6pt 18pt; padding:0; }
+li { margin: 2pt 0; }
+table { border-collapse: collapse; width:100%; margin: 6pt 0 10pt; font-size: 10pt; break-inside: avoid; }
+th, td { border:1px solid #9bd3b8; padding:4pt 6pt; text-align:left; vertical-align:top; }
+th { background:#eef9f3; }
+.box { background:#eef9f3; border-left:4px solid #1d8f63; padding:7pt 10pt; margin:8pt 0; break-inside: avoid; }
+.warn { background:#fff4e0; border-left:4px solid #e0912b; padding:7pt 10pt; margin:8pt 0; break-inside: avoid; }
+code { background:#f1f5f3; padding:0 3pt; border-radius:3pt; font-size:10pt; }
+.cover { padding: 30mm 0 10mm; }
+.sub { font-size: 13pt; color:#3c5a4e; }
+.toc li { margin: 1pt 0; }
+.pb { break-before: page; }
+.small { font-size: 9.5pt; color:#4a5e56; }
+.figs { display:flex; justify-content:center; gap:14pt; margin:8pt 0 10pt; flex-wrap:wrap; }
+figure { margin:0; text-align:center; break-inside:avoid; max-width:210pt; }
+figure svg { display:block; margin:0 auto; }
+figcaption { font-size:9.5pt; color:#3c5a4e; margin-top:4pt; }
+
+.mock { width: 262px; margin: 6pt auto 4pt; border: 1px solid #2f7a5f; border-radius: 12px; background:#07120f; color:#e5fff5; overflow:hidden; font: 8.5pt/1.35 "DejaVu Sans", Arial, sans-serif; }
+.mock .bar { background:#0c1c16; padding:6px 10px; color:#65ffb4; font-weight:bold; display:flex; justify-content:space-between; }
+.mock .bar span { color:#bdebd6; font-weight:normal; }
+.mock .body { padding:8px 10px 10px; }
+.mock .card { background:#10251e; border:1px solid #285541; border-radius:8px; padding:7px 8px; margin:6px 0; }
+.mock .card h4 { margin:0 0 4px; font-size:9pt; color:#e5fff5; }
+.mock .lbl { color:#bdebd6; font-size:7.5pt; margin:4px 0 1px; }
+.mock .inp { background:#06150f; border:1px solid #477b63; border-radius:5px; padding:3px 6px; color:#fff; font-size:8pt; }
+.mock .row { display:flex; justify-content:space-between; border-top:1px solid #244333; padding:3px 0; font-size:7.8pt; }
+.mock .row b { color:#65ffb4; font-weight:bold; }
+.mock .btn { background:#ff9b32; color:#1b1206; border-radius:6px; text-align:center; font-weight:bold; padding:5px; margin-top:6px; font-size:8.5pt; }
+.mock .ck { font-size:8pt; margin:3px 0; }
+.mock .stat { font-size:7.5pt; color:#e5fff5; }
+.mock .stat i { font-style:normal; color:#65ffb4; }
+.mock .small { color:#9dbdaf; font-size:7pt; }
+</style>
+</head>
+<body>
+<div class="cover">
+<h1>Flight Radar-D &amp; Clock</h1>
+<p class="sub">Detailed manual: device, web interface and API key registration</p>
+<p>A device based on ESP32-C3 with a round 240×240 screen. It shows nearby aircraft on a radar and works as a set of aviation-style clocks with weather. Everything is configured through a browser on a phone or computer.</p>
+<div class="box"><b>Contents:</b> Wi-Fi connection, radar, clocks and instruments, data sources, weather, API key registration, backups, troubleshooting. The firmware itself is not described in this manual.</div>
+</div>
+
+<h2>Contents</h2>
+<ol class="toc">
+<li>What you need</li>
+<li>Power on and Wi-Fi connection</li>
+<li>Device button</li>
+<li>Main settings page</li>
+<li>Radar: scales, aircraft, labels, search</li>
+<li>Nearby aircraft</li>
+<li>Data sources</li>
+<li>Weather</li>
+<li>Registration and API keys</li>
+<li>Clocks and instruments</li>
+<li>Time and synchronization</li>
+<li>Network and IP address</li>
+<li>Configuration: backup, restore, reset</li>
+<li>Security</li>
+<li>If something does not work</li>
+<li>Quick start (English)</li>
+</ol>
+
+<h2>1. What you need</h2>
+<ul>
+<li>The device with a USB power cable.</li>
+<li>A home Wi-Fi network on <b>2.4 GHz</b>. The device cannot see 5 GHz networks.</li>
+<li>A phone or computer with a browser for setup.</li>
+<li>For some data sources: accounts and keys (see section 9). Without them the radar and clocks still work, but some data may be unavailable.</li>
+</ul>
+
+<h2>2. Power on and Wi-Fi connection</h2>
+<h3>2.1. First power-on without a home network</h3>
+<ol>
+<li>Plug the device into a USB power source.</li>
+<li>If the home Wi-Fi is not set up or does not connect, the device creates its own access point <b>RADAR</b>.</li>
+<li>On your phone or computer, open the Wi-Fi list and connect to <b>RADAR</b>. The access point password is shown on the main settings page; by default it is <b>11223344</b>.</li>
+<li>Open <b>http://192.168.4.1</b> in a browser.</li>
+<li>Choose your home network from the list ("Scan networks") or type its name, enter the password and press "Save".</li>
+<li>The device restarts and connects to your home network.</li>
+</ol>
+<div class="warn">If your system says the <b>RADAR</b> network has no internet access, choose to stay connected. The device does not need internet access to serve its settings pages on the local address.</div>
+
+<h3>2.2. Startup screen</h3>
+<table>
+<tr><th>Situation</th><th>What the device shows</th></tr>
+<tr><td>Home Wi-Fi is connected</td><td>The text "YOUR NETWORK", the network name (SSID), the IP address and the web-interface address such as <code>http://192.168.x.x</code>. The screen stays for 10 seconds, then the radar or clock opens, depending on settings.</td></tr>
+<tr><td>Home Wi-Fi is not connected</td><td>The texts "HOME WI-FI NOT CONNECTED" / "CONNECT TO RADAR", the <b>RADAR</b> network name and the address <code>HTTP://192.168.4.1</code>. The screen stays for up to 5 minutes or until you press the button, then the device switches to the clock. The <b>RADAR</b> access point and the web server keep working.</td></tr>
+</table>
+<p>The address on the home network can change after a router restart. The current address is always shown on the startup screen and at the top of the main page.</p>
+
+<h3>2.3. Emergency RADAR access point</h3>
+<p>If the home network is connected, the <b>RADAR</b> access point works for 10 minutes after startup and then turns off. This way it does not stay open to others. If there is no home network, the access point stays on until you connect to it or set up Wi-Fi.</p>
+
+<h2>3. Device button</h2>
+<table>
+<tr><th>Action</th><th>Result</th></tr>
+<tr><td>Short press</td><td>On the radar: next scale. In the clocks: next style. In automatic cycling mode the scales change by themselves.</td></tr>
+<tr><td>Hold for about 3 seconds</td><td>Switches between the radar and the clock.</td></tr>
+</table>
+<p>A long press is recognised by how long the button is held when released, so it works even while the device is busy with a data request.</p>
+
+<h2>4. Main settings page</h2>
+<p>Open the device address in a browser. The top of the page shows the network mode and the IP address; there is a RU / EN language switch.</p>
+<table>
+<tr><th>Block</th><th>What you set</th></tr>
+<tr><td>Emergency RADAR access point</td><td>Access point name, password, address and working time (10 minutes when the home network is connected).</td></tr>
+<tr><td>Wi-Fi</td><td>Home network name and password. If you leave the password field empty when saving, the current password is kept.</td></tr>
+<tr><td>Radar: capital and airport</td><td>A list of 189 airports (see below). Choosing one fills in the city, coordinates and airport code.</td></tr>
+<tr><td>City name on screen</td><td>Up to 24 characters, shown on the radar and in the clocks.</td></tr>
+<tr><td>Center coordinates</td><td>Latitude and longitude. You can type them manually if your point is not in the list.</td></tr>
+<tr><td>Scale units</td><td>Kilometres or miles.</td></tr>
+<tr><td>Custom scale</td><td>Any value from 0.1 to 1000 km (or miles). Empty — choose a scale from the list.</td></tr>
+<tr><td>Startup scale</td><td>Which scale is shown after power-on.</td></tr>
+</table>
+<h3>Airport list</h3>
+<p>The list contains 189 airports. First come 125 Russian airports sorted alphabetically by city name (numbers 1–125), then 64 foreign airports — 4 Kyrgyz airports and 60 world hubs — also sorted alphabetically (numbers 126–189). The numbers are shown in the list. The full list with IATA and ICAO codes and coordinates is in the <b>AIRPORTS_LIST</b> file supplied with the firmware.</p>
+<div class="box">The selected airport sets the radar centre and the NOAA METAR weather station. NOAA weather needs an airport from the list, not arbitrary coordinates.</div>
+
+<div class="figs">
+<figure><div class="mock"><div class="bar">Flight Radar-D &amp; Clock <span>RU | EN</span></div><div class="body">
+<div class="small">Режим сети: DHCP · IP 192.168.1.50</div>
+<div class="card"><h4>Радар</h4>
+<div class="lbl">Столица и аэропорт</div><div class="inp">Москва — Шереметьево (SVO)</div>
+<div class="lbl">Название города на экране</div><div class="inp">Москва</div>
+<div class="lbl">Широта центра</div><div class="inp">55.972600</div>
+<div class="lbl">Долгота центра</div><div class="inp">37.414600</div>
+<div class="lbl">Единицы масштаба</div><div class="inp">километры (км)</div>
+<div class="lbl">Масштаб при запуске</div><div class="inp">100 км</div>
+<div class="btn">Сохранить настройки</div></div>
+<div class="card"><h4>Сеть</h4><div class="stat">Домашний Wi-Fi: <i>подключён</i></div>
+<div class="small">Аварийная точка RADAR: SSID RADAR. Точка работает 10 минут, если подключена домашняя сеть.</div></div>
+</div></div><figcaption><b>Main page.</b> Radar and network. Layout follows the firmware field names; values are examples.</figcaption></figure>
+</div>
+
+<h2>5. Radar: scales, aircraft, labels, search</h2>
+<h3>5.1. Scales</h3>
+<p>Available scales: <b>6, 10, 20, 50, 100, 200, 400 and 1000 km</b>. A short press of the button cycles through them. A scale you select with the button is saved as the default and restored after power-off.</p>
+<p>On the <b>Radar scales</b> page you can mark which scales take part in button switching and set the display time for each scale in cycling mode.</p>
+
+<h3>5.2. How the radar looks</h3>
+<ul>
+<li><b>Centre</b> — the chosen city or airport.</li>
+<li><b>Aircraft</b> — icons rotated to the heading. The icon type is chosen on the Data sources page: <b>yellow aircraft silhouette</b> or <b>red triangle</b>. Both have a purple heading line. Size: small, medium or large.</li>
+<li><b>Selected aircraft</b> — outlined with an orange dashed square. You can select it from the "Nearby aircraft" list.</li>
+<li><b>Red dots at the edge</b> — aircraft beyond the current scale. Press the button or choose a larger scale to see them.</li>
+<li><b>Trails</b> — the line the aircraft has flown. Enabled on the sources page; you can set the history length.</li>
+<li><b>Map</b> — borders, rivers and lakes under the radar. Enabled with its own switch.</li>
+</ul>
+<div class="figs">
+<figure><svg viewBox="0 0 240 240" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+<defs><clipPath id="rc"><circle cx="120" cy="120" r="118"/></clipPath></defs>
+<g clip-path="url(#rc)">
+<rect width="240" height="240" fill="#07120f"/>
+<path d="M4 150 Q60 118 92 168 T236 140" stroke="#3a86ff" stroke-width="2.5" fill="none"/>
+<path d="M20 210 Q110 170 150 232" stroke="#3a86ff" stroke-width="2.5" fill="none"/>
+<path d="M180 6 Q196 40 176 70 T206 120" stroke="#3a86ff" stroke-width="2" fill="none"/>
+<g stroke="#1d4a3a" fill="none" stroke-width="1"><circle cx="120" cy="120" r="30"/><circle cx="120" cy="120" r="60"/><circle cx="120" cy="120" r="90"/></g>
+<line x1="120" y1="0" x2="120" y2="240" stroke="#15362b"/><line x1="0" y1="120" x2="240" y2="120" stroke="#15362b"/>
+<circle cx="120" cy="120" r="3" fill="#65ffb4"/>
+<rect x="132" y="50" width="26" height="26" fill="none" stroke="#ff9b32" stroke-width="2" stroke-dasharray="4 3"/>
+<g transform="translate(146,62) rotate(35) scale(1.00)"><polygon points="0,-10 1.6,-6 1.6,-2 8,4 8,2 1.6,-2 1.6,7 3.5,9.5 3.5,10.5 0,9.5 -3.5,10.5 -3.5,9.5 -1.6,7 -1.6,-2 -8,2 -8,4 -1.6,-2 -1.6,-6" fill="#F8C024"/></g><line x1="146" y1="62" x2="158" y2="48" stroke="#b07bff" stroke-width="1.5"/>
+<text x="164" y="90" font-size="9" fill="#F8C024" font-family="DejaVu Sans, sans-serif">10600 м</text>
+<text x="164" y="101" font-size="9" fill="#F8C024" font-family="DejaVu Sans, sans-serif">820 км/ч</text>
+<g transform="translate(80,158) rotate(-60) scale(1.00)"><polygon points="0,-10 1.6,-6 1.6,-2 8,4 8,2 1.6,-2 1.6,7 3.5,9.5 3.5,10.5 0,9.5 -3.5,10.5 -3.5,9.5 -1.6,7 -1.6,-2 -8,2 -8,4 -1.6,-2 -1.6,-6" fill="#F8C024"/></g><g transform="translate(190,186) rotate(120) scale(1.00)"><polygon points="0,-10 1.6,-6 1.6,-2 8,4 8,2 1.6,-2 1.6,7 3.5,9.5 3.5,10.5 0,9.5 -3.5,10.5 -3.5,9.5 -1.6,7 -1.6,-2 -8,2 -8,4 -1.6,-2 -1.6,-6" fill="#F8C024"/></g><g transform="translate(96,88) rotate(-20) scale(1.00)"><polygon points="0,-10 1.6,-6 1.6,-2 8,4 8,2 1.6,-2 1.6,7 3.5,9.5 3.5,10.5 0,9.5 -3.5,10.5 -3.5,9.5 -1.6,7 -1.6,-2 -8,2 -8,4 -1.6,-2 -1.6,-6" fill="#F8C024"/></g><circle cx="26" cy="46" r="4" fill="#ff4d4d"/><circle cx="222" cy="104" r="4" fill="#ff4d4d"/>
+<text x="120" y="20" text-anchor="middle" font-size="13" fill="#e5fff5" font-family="DejaVu Sans, sans-serif">МОСКВА</text>
+<text x="120" y="226" text-anchor="middle" font-size="12" fill="#65ffb4" font-family="DejaVu Sans, sans-serif">SVO  TR: 4</text>
+</g>
+<circle cx="120" cy="120" r="118" fill="none" stroke="#2f7a5f" stroke-width="3"/>
+</svg><figcaption><b>Radar.</b> Schematic: city name at the top, three-letter airport code and aircraft count at the bottom. Aircraft are silhouettes, the map is blue. The selected aircraft has an orange dashed outline and altitude and speed labels. Red dots mark aircraft beyond the scale.</figcaption></figure>
+</div>
+
+<h3>5.3. Aircraft labels</h3>
+<p>On the sources page you can enable labels: callsign, altitude, speed, heading, distance from the centre and ICAO. Units are metric (km, km/h) or aviation (FL, kt, nm). The label font size is set in the "Labels next to aircraft" block: small, medium or large.</p>
+
+<h3>5.4. Automatic aircraft search</h3>
+<p>If automatic search is enabled and no aircraft is visible for the set time, the radar moves to the next scale and keeps searching up to 400 km. When an aircraft is found, the radar stays on that scale. Automatic search does not work together with cycling through scales.</p>
+
+<h3>5.5. Search by ICAO</h3>
+<p>If enabled, you can find a specific aircraft by its six-character ICAO code. If the aircraft enters the radar area, it is highlighted.</p>
+
+<h3>5.6. Auto-scale and random airport</h3>
+<p><b>Auto-scale by aircraft count.</b> Set on the "Scales" page. If more aircraft are on screen than the "Maximum aircraft on screen" field allows (default 15), the scale decreases by one step. If there are no aircraft for one minute, the scale increases by one step, up to 400 km. There are 15 seconds between steps. While this is on, it replaces the auto-search from section 5.4. Untick it to turn it off: the auto-search then works again.</p>
+<p><b>Random airport.</b> Every set number of minutes (default 10), the radar centre and weather switch to a random airport from the list, and the scale becomes 50 km. This is temporary: the airport chosen on the main page does not change, and it is used again after a restart. The feature can be turned off on the same page. When the button pages through the radar scales, after the last scale an airport item appears: on the home airport it is "Random airport", on a random airport it is "Home airport". It is confirmed with a pause, like "AUTO". "Home airport" returns to the airport from the main page with the previous scale and stops random switching until the "Random airport" item is chosen or the device is restarted.</p>
+<h3>5.7. Tracking the selected aircraft</h3>
+<p>It is turned on by the checkbox on the Aircraft page (/aircraft) under the aircraft selection. While it is on and an aircraft is selected, the radar shows no other aircraft, labels or trails. If the selected aircraft leaves the screen, the scale increases in steps until it appears again. When it is gone completely at the 1000 km scale, tracking switches itself off. While tracking works, auto-search, auto-scale by aircraft count, the scale loop and the random airport do not change the scale or airport.</p>
+<h3>5.8. Transponder codes (squawk)</h3>
+<p>The device reads an aircraft's transponder code (squawk) from the data sources that provide it: OpenSky, adsb.fi, adsb.lol, adsb.one, airplanes.live and FR24. The code has four digits.</p>
+<p>The codes <b>7500</b>, <b>7600</b> and <b>7700</b> are shown on the radar as a filled red circle with the code written above it:</p>
+<ul>
+<li><b>7500</b> — hijacking (unlawful interference with the aircraft).</li>
+<li><b>7600</b> — radio communication failure.</li>
+<li><b>7700</b> — general emergency.</li>
+</ul>
+<p>Other codes are not highlighted. If a source does not provide the code, no circle appears. Do not confuse this with the "Transponder" clock: there the time HHMM is shown as a code, not the aircraft's code.</p>
+<h2>6. Nearby aircraft</h2>
+<p>The "Nearby aircraft" page lists aircraft within the current radar range, sorted by distance. The list refreshes about every 10 seconds. For each aircraft you see the callsign, ICAO, data source, distance, altitude, speed, heading and vertical speed when the source provides them.</p>
+<p>Press an aircraft to highlight it on the radar with an orange dashed outline. The highlight stays until you clear it or the aircraft leaves the radar area.</p>
+
+<h2>7. Data sources</h2>
+<p>The "Data sources" page controls where the aircraft data comes from and shows their status.</p>
+<h3>5.9. Default values</h3>
+<p>On first start, and after a settings reset, the device uses these values:</p>
+<ul>
+<li>Radar centre and weather: Khrabrovo airport, Kaliningrad (KGD).</li>
+<li>Radar scale: 200 km.</li>
+<li>Random airport: off. You can turn it on on the scales page.</li>
+<li>Aircraft sources: adsb.fi and adsb.lol enabled; OpenSky, airplanes.live, adsb.one and Flightradar24 disabled.</li>
+<li>Weather: NOAA METAR for the selected airport.</li>
+<li>Without internet, the clock opens in the artificial horizon style.</li>
+</ul>
+<p>When you select another airport, the radar centre and METAR weather use it. Settings you have saved stay unchanged on the device.</p>
+<h3>5.10. Night screen mode</h3>
+<p>At night the screen turns off, and in the day it turns on again. On the Clock page turn on night mode separately for clock and radar: tick "Turn screen off at night in clock mode", "Turn screen off at night in radar mode", or both. The night and day start times are set there too, for example from 22:00 to 07:00. The time comes from synchronization (NTP or browser). Without time sync the screen stays on. The module backlight keeps shining, because this module does not allow dimming it.</p>
+<p>At night a press of the BOOT button turns the screen on for 15 seconds, then it turns off again. This press does not change the clock style or the radar scale.</p>
+<h3>7.1. Aircraft sources</h3>
+<table>
+<tr><th>Source</th><th>Key</th><th>Default interval and limits</th></tr>
+<tr><td>OpenSky Network</td><td>Client ID and Client Secret needed (section 9)</td><td>22 seconds; manual entry from 10 seconds. For free access, no more than one request every 23 seconds is recommended.</td></tr>
+<tr><td>adsb.fi</td><td>Not needed</td><td>Default interval, see the sources page.</td></tr>
+<tr><td>airplanes.live</td><td>Not needed</td><td>Default interval, see the sources page.</td></tr>
+<tr><td>adsb.lol</td><td>Not needed</td><td>Default interval, see the sources page.</td></tr>
+<tr><td>adsb.one</td><td>Not needed</td><td>Default interval, see the sources page.</td></tr>
+<tr><td>Flightradar24</td><td>API token needed (paid API subscription)</td><td>Minimum interval 30 seconds. Requests use API credits.</td></tr>
+</table>
+<p>Each source can be enabled or disabled separately. The interval is set in the field next to it, within the range allowed by the interface.</p>
+<div class="warn">Service intervals and limits may change. If a source starts returning errors, check its status on the sources page and the terms on the service's official website.</div>
+
+<h3>7.2. Source status</h3>
+<p>Source names are shown in different colours and status text is white. The colour only helps tell the services apart and does not mean the connection state.</p>
+
+<h3>7.3. Detailed diagnostics</h3>
+<p>The "Detailed source diagnostics" block refreshes every 5 seconds. For each <b>enabled</b> source it shows: time of the last successful response, time of the last attempt, number of aircraft received, freshest position age (if the source provides it), last HTTP code and error text. Disabled sources are not shown. If none is enabled, the block says so. Times count from power-on and reset on restart.</p>
+
+<div class="figs">
+<figure><div class="mock"><div class="bar">Источники данных <span>RU | EN</span></div><div class="body">
+<div class="stat"><i>OpenSky</i>: ОК, <i>adsb.fi</i>: ОК, <i>airplanes.live</i>: выкл., <i>adsb.lol</i>: ОК</div>
+<div class="card"><h4>Источники самолётов</h4>
+<div class="ck">☑ OpenSky Network · интервал 22,0 с</div>
+<div class="ck">☑ adsb.fi</div>
+<div class="ck">☐ airplanes.live</div>
+<div class="ck">☑ adsb.lol</div>
+<div class="ck">☐ Flightradar24 · токен не задан</div></div>
+<div class="card"><h4>Значок самолёта</h4>
+<div class="lbl">Вид значка</div><div class="inp">Жёлтый силуэт самолёта</div>
+<div class="lbl">Размер значка</div><div class="inp">средний</div>
+<div class="btn">Сохранить</div></div>
+<div class="card"><h4>Подробная диагностика источников</h4>
+<div class="small">Обновляется каждые 5 секунд. Выключенные источники не показываются.</div>
+<div class="row"><span>adsb.fi · последний ответ</span><b>12 с назад</b></div>
+<div class="row"><span>Принято бортов</span><b>84</b></div>
+<div class="row"><span>HTTP-код</span><b>200</b></div>
+<div class="row"><span>adsb.lol · последний ответ</span><b>7 с назад</b></div></div>
+</div></div><figcaption><b>Data sources.</b> Enabling sources, the aircraft icon and detailed diagnostics. Layout and values are examples.</figcaption></figure>
+</div>
+
+<h3>7.4. Map, trails, icon</h3>
+<ul>
+<li><b>Map under the radar</b> — enabled with the "Map" switch.</li>
+<li><b>Aircraft trails</b> — enabled with the "Trails" switch; the default history is 120 seconds.</li>
+<li><b>Aircraft icon</b> — the "Aircraft marker" block: type (silhouette or triangle) and size.</li>
+</ul>
+
+<h2>8. Weather</h2>
+<p>Weather is used by the clock styles with weather (wind, METAR, weather station) and by the weather line on the screen. The settings are on the "Sources" page → "Weather provider settings".</p>
+<table>
+<tr><th>Provider</th><th>Key</th><th>What to know</th></tr>
+<tr><td>Open-Meteo</td><td>Not needed</td><td>Works immediately. Temperature, humidity, precipitation, cloud cover, wind, pressure. Default choice.</td></tr>
+<tr><td>OpenWeatherMap</td><td>Needed</td><td>Updates every 15 minutes. Free plan, see section 9.</td></tr>
+<tr><td>WeatherStack</td><td>Needed</td><td>100 free requests per month, so updates happen every 8 hours.</td></tr>
+<tr><td>NOAA METAR</td><td>Not needed</td><td>Weather of the selected airport from METAR data. An airport from the list on the main page is needed, not arbitrary coordinates.</td></tr>
+</table>
+<p><b>Setup:</b></p>
+<ol>
+<li>Open "Sources" → "Weather provider settings".</li>
+<li>In the "Use for clocks" field choose the provider.</li>
+<li>If the provider needs a key, paste it into the field. If a key is already saved, the field is empty — leave it empty to keep it.</li>
+<li>Choose units: temperature °C or °F, pressure hPa or mmHg.</li>
+<li>Press "Save". The new provider is requested at once.</li>
+</ol>
+<div class="box">If no weather appears, the "Weather for clocks" block on the sources page shows the reason: no Wi-Fi, no key, a provider error or a connection error.</div>
+
+<h2 class="pb">9. Registration and API keys</h2>
+<p>Below are step-by-step instructions for services that need credentials. Site addresses and section names change over time, so if something differs, follow the service's official help. Do not send keys to third-party sites and do not publish them.</p>
+
+<h3>9.1. OpenSky Network (free, OAuth2)</h3>
+<ol>
+<li>Open the official site <b>opensky-network.org</b> and sign up or log in.</li>
+<li>On your account page find the <b>API Clients</b> section and create a new API client.</li>
+<li>Download the issued file <b>credentials.json</b>. It contains the fields <code>clientId</code> and <code>clientSecret</code>.</li>
+<li>On the device open <b>Data sources → OpenSky → "Upload credentials.json"</b>, choose the file and confirm.</li>
+<li>If you do not want to upload the file, type the Client ID manually and enter the Client Secret in the protected field on the sources page.</li>
+<li>Make sure the <b>"Use OpenSky"</b> checkbox is ticked and press "Save".</li>
+</ol>
+<div class="box">OpenSky uses OAuth2 Client Credentials. Your website login and password do not work for the device — you need the Client ID and Client Secret of the API client. Official authentication documentation: openskynetwork.github.io/opensky-api/rest.html</div>
+
+<h3>9.2. Flightradar24 API (paid)</h3>
+<div class="warn">This source needs a <b>separate API subscription</b> with API credits. A regular Flightradar24 website subscription does not give API access.</div>
+<ol>
+<li>Open the Flightradar24 API portal (fr24api.flightradar24.com), sign up or log in.</li>
+<li>Go to <b>Subscription &amp; credits</b> and choose and activate an API plan.</li>
+<li>Open <b>Key management</b> and press <b>Create token</b>. Save the token somewhere safe immediately — the value may not be shown again.</li>
+<li>On the device open Data sources → Flightradar24, paste the token into the <b>API token</b> field and press "Save".</li>
+</ol>
+<p class="small">Documentation: fr24api.flightradar24.com/docs/getting-started and fr24api.flightradar24.com/docs/authentication</p>
+
+<h3>9.3. OpenWeatherMap (weather, free key)</h3>
+<ol>
+<li>Open <b>openweathermap.org</b> and sign up.</li>
+<li>Confirm your email address: the message is sent to the address you entered.</li>
+<li>In your account open the <b>API keys</b> section and copy the key. The key may appear with a delay after registration.</li>
+<li>On the device open "Sources" → "Weather provider settings", choose OpenWeatherMap and paste the key. Press "Save".</li>
+</ol>
+<p>As described in this manual, the free plan does not require a card, but terms can change — check them on the site before signing up.</p>
+
+<h3>9.4. WeatherStack (weather, free key)</h3>
+<ol>
+<li>Open <b>weatherstack.com</b> and sign up for the free plan.</li>
+<li>Copy the <b>Access Key</b> from your account dashboard.</li>
+<li>On the device open "Weather provider settings", choose WeatherStack and paste the key. Press "Save".</li>
+</ol>
+<p>The free plan is limited in requests per month, so the device updates the weather every 8 hours.</p>
+
+<h3>9.5. Sources without keys</h3>
+<p>No registration is needed for: <b>Open-Meteo</b>, <b>NOAA METAR</b> (aviationweather.gov), <b>adsb.fi</b>, <b>airplanes.live</b>, <b>adsb.lol</b>, <b>adsb.one</b>. Follow the limits and terms of each service.</p>
+
+<h3>9.6. Where keys are stored</h3>
+<ul>
+<li>Keys and tokens are stored in the device memory.</li>
+<li>Keys are <b>not</b> included in the settings backup file. After restoring from a file, check them on the weather page and the sources page.</li>
+<li>The OpenSky <b>credentials.json</b> file is secret. Do not publish it or send it to anyone.</li>
+</ul>
+
+<h2 class="pb">10. Clocks and instruments</h2>
+<p>The "Clock settings" page selects the styles you can switch with the button and how long each one is shown. A single ticked style does not switch to another.</p>
+<h3>10.1. Instruments</h3>
+<ul>
+<li><b>Attitude indicator</b> — sky and ground, bank scale, pitch marks. Smooth motion can be turned off.</li>
+<li><b>Altimeter</b> — drum-style altitude digits.</li>
+<li><b>Gyrocompass</b> — a compass card making one turn every 60 seconds. Rotation can be turned off.</li>
+<li><b>Chronograph</b> — cockpit clock with small dials.</li>
+<li><b>ILS / glideslope</b> — deviation needles for course and glide path. Motion can be turned off.</li>
+<li><b>Transponder</b> — time shown as a squawk code.</li>
+<li><b>TERRAIN</b> — terrain profile and the "terrain close" warning. Motion can be turned off.</li>
+</ul>
+<h3>10.2. Weather and station</h3>
+<ul>
+<li><b>Weather: wind</b> — wind rose and direction arrow.</li>
+<li><b>Weather: METAR</b> — METAR-style string, temperature and QNH pressure.</li>
+<li><b>Weather station</b> — time, wind, temperature, humidity, precipitation, cloud cover, pressure.</li>
+</ul>
+<h3>10.3. Classic</h3>
+<ul>
+<li><b>Minimal</b> — ring with seconds.</li>
+<li><b>Radar</b> — second hand.</li>
+<li><b>Warm</b> — warm colour scheme.</li>
+<li><b>Night</b> — dimmed colours.</li>
+</ul>
+<div class="box">Weather styles (wind, METAR, weather station) work only with Wi-Fi connected and a weather provider selected.</div>
+<h3>10.4. Automatic switching and simulation</h3>
+<p>You can set automatic style switching and the display time for each style. Smooth attitude motion and gyrocompass rotation can be enabled separately. Save the changes.</p>
+<p>The settings also choose the mode after power-on: radar or clock.</p>
+
+<div class="figs">
+<figure><svg viewBox="0 0 240 240" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+<defs><clipPath id="ac"><circle cx="120" cy="120" r="118"/></clipPath></defs>
+<g clip-path="url(#ac)">
+<rect width="240" height="240" fill="#2a6fb0"/>
+<rect y="120" width="240" height="120" fill="#8a5a2b"/>
+<line x1="0" y1="120" x2="240" y2="120" stroke="#ffffff" stroke-width="2"/>
+<g stroke="#ffffff" stroke-width="1.5"><line x1="100" y1="90" x2="140" y2="90"/><line x1="108" y1="75" x2="132" y2="75"/><line x1="100" y1="150" x2="140" y2="150"/><line x1="108" y1="165" x2="132" y2="165"/></g>
+<path d="M50 60 A100 100 0 0 1 190 60" stroke="#ffffff" stroke-width="2" fill="none"/>
+<polygon points="120,22 113,34 127,34" fill="#ff9b32"/>
+<g transform="translate(120,120)"><rect x="-44" y="-3" width="30" height="6" fill="#F8C024"/><rect x="14" y="-3" width="30" height="6" fill="#F8C024"/><rect x="-6" y="-8" width="12" height="16" fill="#F8C024"/></g>
+</g>
+<circle cx="120" cy="120" r="118" fill="none" stroke="#2f7a5f" stroke-width="3"/>
+</svg><figcaption><b>Attitude indicator.</b> Sky and ground, bank scale at the top, yellow aircraft silhouette in the centre.</figcaption></figure>
+<figure><svg viewBox="0 0 240 240" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="120" cy="120" r="118" fill="#05090a"/>
+<circle cx="120" cy="120" r="108" fill="none" stroke="#2c4a40" stroke-width="2"/>
+<g stroke="#9bd3b8" stroke-width="2"><line x1="120" y1="16" x2="120" y2="28"/><line x1="224" y1="120" x2="212" y2="120"/><line x1="120" y1="224" x2="120" y2="212"/><line x1="16" y1="120" x2="28" y2="120"/></g>
+<line x1="120" y1="120" x2="120" y2="48" stroke="#e5fff5" stroke-width="5" stroke-linecap="round"/>
+<line x1="120" y1="120" x2="172" y2="120" stroke="#e5fff5" stroke-width="3" stroke-linecap="round"/>
+<line x1="120" y1="132" x2="110" y2="200" stroke="#ff9b32" stroke-width="2"/>
+<circle cx="120" cy="120" r="5" fill="#ff9b32"/>
+</svg><figcaption><b>Minimal.</b> Ring with marks and time hands.</figcaption></figure>
+<figure><svg viewBox="0 0 240 240" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+<defs><clipPath id="mc"><circle cx="120" cy="120" r="118"/></clipPath></defs>
+<g clip-path="url(#mc)">
+<circle cx="120" cy="120" r="118" fill="#0b1f2c"/>
+<circle cx="120" cy="120" r="108" fill="none" stroke="#2c5a70" stroke-width="2"/>
+<g font-family="DejaVu Sans Mono, monospace" fill="#e5fff5">
+<text x="120" y="70" text-anchor="middle" font-size="13" fill="#7fd3ff">UUEE 101030Z</text>
+<text x="120" y="92" text-anchor="middle" font-size="13">27008KT 9999</text>
+<text x="120" y="114" text-anchor="middle" font-size="13">SCT040 BKN080</text>
+<text x="120" y="142" text-anchor="middle" font-size="26" font-weight="bold" fill="#ffd27a">12/03</text>
+<text x="120" y="172" text-anchor="middle" font-size="14" fill="#7fd3ff">Q1013</text>
+<text x="120" y="196" text-anchor="middle" font-size="11" fill="#9dbdaf">метео · QNH</text>
+</g></g>
+<circle cx="120" cy="120" r="118" fill="none" stroke="#2f7a5f" stroke-width="3"/>
+</svg><figcaption><b>Weather: METAR.</b> METAR-style string, temperature and QNH pressure.</figcaption></figure>
+</div>
+
+<div class="figs">
+<figure><div class="mock"><div class="bar">Настройки часов <span>RU | EN</span></div><div class="body">
+<div class="card"><h4>Стили часов</h4>
+<div class="small">Отметьте стили, которые переключает кнопка, и время показа каждого.</div>
+<div class="ck">☑ Авиагоризонт · 15 с</div>
+<div class="ck">☑ Высотомер · 15 с</div>
+<div class="ck">☑ Гирокомпас · 15 с</div>
+<div class="ck">☑ Хронограф · 15 с</div>
+<div class="ck">☑ ILS / глиссада · 15 с</div>
+<div class="ck">☑ Транспондер · 15 с</div>
+<div class="ck">☑ TERRAIN · 15 с</div>
+<div class="ck">☐ Погода: ветер</div>
+<div class="ck">☐ Погода: метео</div>
+<div class="ck">☐ Метеостанция</div>
+<div class="ck">☑ Минимал · 15 с</div>
+<div class="ck">☑ Тёплый · 15 с</div>
+<div class="ck">☑ Ночной · 15 с</div></div>
+<div class="card"><h4>Симуляция приборов</h4>
+<div class="ck">☑ Плавное движение авиагоризонта</div>
+<div class="ck">☑ Вращение шкалы гирокомпаса</div>
+<div class="lbl">Часовой пояс относительно UTC</div><div class="inp">+7</div>
+<div class="btn">Включить часы</div></div>
+</div></div><figcaption><b>Clock settings.</b> Which styles the button switches and the display time for each.</figcaption></figure>
+</div>
+
+<h2>11. Time and synchronization</h2>
+<p>The clock takes the time from the internet via NTP. The "Clock settings" page provides:</p>
+<ul>
+<li>the <b>"Sync with browser"</b> button — sends the device the current time and time zone of the phone or computer that has the page open. It also works when you are connected directly to the <b>RADAR</b> access point;</li>
+<li>a manual time zone relative to UTC;</li>
+<li>the NTP server address, by default <code>pool.ntp.org</code>; the reset button brings back the default;</li>
+<li>the time sync status.</li>
+</ul>
+<p>After power-on the clock first shows a fallback time of <b>11:11, 1 January 2026</b> in the selected time zone. It runs like a normal clock until confirmed NTP time arrives or you press "Sync with browser". After that the date and time are corrected automatically.</p>
+<div class="warn">If sync fails, check the home network connection and access to NTP servers. In <b>RADAR</b> access point mode without internet, NTP may be unavailable — use the "Sync with browser" button instead.</div>
+
+<h2>12. Network and IP address</h2>
+<p>The "Network and IP address" page is at the bottom of the "Device configuration" page.</p>
+<table>
+<tr><th>Mode</th><th>When to use</th></tr>
+<tr><td>DHCP</td><td>The usual choice: the router assigns the address.</td></tr>
+<tr><td>Static IP</td><td>Use it if the address must stay fixed. Enter the device IP, router gateway, subnet mask, DNS 1 and DNS 2.</td></tr>
+</table>
+<div class="warn">Before saving a static address make sure it is in the router's subnet and not used by another device. If the address is wrong, connect to <b>RADAR</b>, open <code>http://192.168.4.1</code> and switch back to DHCP.</div>
+
+<h2>13. Configuration: backup, restore, reset</h2>
+<p>The "Device configuration" page contains:</p>
+<ul>
+<li><b>Save configuration</b> — downloads a JSON file with the current settings.</li>
+<li><b>Load configuration</b> — choose a previously saved file. Current settings are replaced.</li>
+<li><b>Reset settings</b> — deletes the saved Wi-Fi, radar, clock and source settings. Only after confirmation.</li>
+<li><b>Device information</b> — version, memory, network status.</li>
+</ul>
+<div class="box">The backup file does not contain the Wi-Fi password, OpenSky Client ID and Client Secret, API tokens or weather keys. After restoring, enter or check them again. Keep the OpenSky credentials.json file separately.</div>
+
+<h2>14. Security</h2>
+<ul>
+<li>The default password of the <b>RADAR</b> access point (<b>11223344</b>) is publicly known. The access point is available only until the home network connects and for 10 minutes after startup if the network is connected, so do not leave the device with an open access point where strangers can connect.</li>
+<li>Do not publish the Client Secret, tokens and API keys in public repositories, screenshots or messages. If a secret becomes public, revoke it on the service's website and create a new one.</li>
+<li>Do not expose the device address to the internet: the settings pages are designed for the home network.</li>
+<li>When moving the device, save the configuration and enter the keys again at the new place.</li>
+</ul>
+
+<h2>15. If something does not work</h2>
+<table>
+<tr><th>Symptom</th><th>What to check</th></tr>
+<tr><td>The web interface does not open</td><td>Phone and device on the same network; the address starts with <code>http://</code>, not <code>https://</code>; the current IP from the startup screen; without a home network — the <b>RADAR</b> access point.</td></tr>
+<tr><td>The device shows "CONNECT TO RADAR"</td><td>Check the network name and password, signal strength, and that the network works on 2.4 GHz. After a failure the device returns to the <b>RADAR</b> access point.</td></tr>
+<tr><td>No aircraft</td><td>Status and diagnostics on the Data sources page; at least one source enabled; Wi-Fi connection.</td></tr>
+<tr><td>No weather</td><td>The "Weather for clocks" block shows the reason. Check the key and the chosen provider. NOAA needs an airport from the list.</td></tr>
+<tr><td>Wrong time</td><td>Check NTP and the time zone; without internet press "Sync with browser".</td></tr>
+<tr><td>The button behaves strangely</td><td>Short and long presses differ by hold time. To switch between radar and clock, hold for about 3 seconds.</td></tr>
+<tr><td>Need to start over</td><td>"Device configuration" → "Reset settings" and confirm. Then set up Wi-Fi again.</td></tr>
+</table>
+<p>If the problem remains, save the configuration and write to the channel or contact listed below.</p>
+
+<h2>16. Quick start (English)</h2>
+<ol>
+<li>Power the device via USB. If home Wi-Fi is unavailable, connect to the <b>RADAR</b> network (default password 11223344) and open <code>http://192.168.4.1</code>.</li>
+<li>Choose your home Wi-Fi network, enter its password and save. The device restarts and connects.</li>
+<li>Short press: next radar scale or next clock style. Hold about 3 seconds: switch radar/clock.</li>
+<li>Data sources: enable the ones you want. OpenSky needs a Client ID and Secret from opensky-network.org (API Clients). Flightradar24 needs a paid API subscription and a token.</li>
+<li>Weather: choose a provider under Sources → Weather provider settings. Open-Meteo and NOAA METAR need no key. OpenWeatherMap and WeatherStack need a free key.</li>
+<li>Backup: download the JSON configuration from the Device configuration page. The Wi-Fi password and API keys are not included.</li>
+</ol>
+
+<hr>
+<p class="small">Service addresses and terms of use may change. Check current details on the official websites before registering.<br>
+Device channel: https://t.me/FLIGHT_RADAR_D_CLOCK<br>
+Questions: https://t.me/dvynsk<br>
+The software was created by Dmitry Yuryevich Volpert; all rights belong to him.</p>
+
+</body>
+</html>
