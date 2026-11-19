@@ -35,7 +35,7 @@ h1{font-size:22px}
 <div class="box">
 <p><b>2. Установите:</b></p>
 <esp-web-install-button id="btn" manifest="manifest.json">
-  <button slot="activate">Установить 1.1.111</button>
+  <button slot="activate">Установить</button>
   <span slot="unsupported">Этот браузер не поддерживает прошивку по USB. Откройте в Chrome или Edge.</span>
   <span slot="not-allowed">Страница должна открываться по HTTPS.</span>
 </esp-web-install-button>
@@ -50,7 +50,6 @@ document.getElementById('bin').addEventListener('change', function (e) {
   var binUrl = URL.createObjectURL(f);
   var manifest = {
     name: "Flight Radar-D & Clock",
-    version: "1.1.111",
     new_install_prompt_erase: false,
     builds: [{ chipFamily: "ESP32-C3", parts: [{ path: binUrl, offset: 65536 }] }]
   };

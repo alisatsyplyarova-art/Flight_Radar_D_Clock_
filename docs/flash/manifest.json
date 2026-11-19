@@ -1,12 +1,14 @@
 {
   "name": "Flight Radar-D & Clock",
-  "version": "1.1.111",
   "new_install_prompt_erase": false,
   "builds": [
     {
       "chipFamily": "ESP32-C3",
       "parts": [
-        { "path": "firmware.bin", "offset": 65536 }
+        {
+          "path": "firmware.bin",
+          "offset": 65536
+        }
       ]
     }
   ]
