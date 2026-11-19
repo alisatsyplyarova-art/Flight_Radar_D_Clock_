@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flight Radar-D &amp; Clock — обновление по USB (без стирания)</title>
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:16px system-ui,sans-serif;background:#f6f8f7;color:#16201c}
+main{max-width:560px;margin:auto;padding:16px}
+h1{font-size:22px}
+.box{background:#fff;border:1px solid #cfd9d4;border-radius:12px;padding:14px;margin:12px 0}
+button{padding:10px 16px;border-radius:8px;border:0;background:#1d5c45;color:#fff;font:inherit;cursor:pointer}
+button:disabled{opacity:.5}
+#log{white-space:pre-wrap;font:13px ui-monospace,monospace;background:#0d1512;color:#cfe9dc;border-radius:8px;padding:10px;min-height:80px}
+.small{font-size:13px;color:#5b6b64}
+@media (prefers-color-scheme:dark){body{background:#07120f;color:#e5fff5}.box{background:#10251e;border-color:#285541}.small{color:#9fd8bf}}
+</style>
+</head>
+<body>
+<main>
+<h1>Flight Radar-D &amp; Clock — обновление по USB</h1>
+<div class="box">
+<p>Настройки и Wi-Fi сохраняются: записываются только загрузчик, таблица разделов, boot_app0 и приложение. Раздел NVS не стирается.</p>
+<p class="small">Нужны Chrome или Edge и USB-кабель с передачей данных. Если прибор не виден, зажмите BOOT, подключите кабель и отпустите BOOT.</p>
+</div>
+<div class="box">
+<p><b>1. Выберите файл прошивки приложения (.ino.bin) на этом компьютере:</b></p>
+<input type="file" id="app" accept=".bin">
+<p id="picked" class="small">Файл не выбран.</p>
+</div>
+<div class="box">
+<p><b>2. Подключите прибор и прошейте:</b></p>
+<button id="go" disabled>Подключить и прошить</button>
+</div>
+<div class="box">
+<p><b>Журнал:</b></p>
+<div id="log"></div>
+</div>
+</main>
+<script type="module">
+// Библиотека esptool-js: запись по адресам без стирания всего флеша.
+// Версия ниже должна быть проверена перед публикацией (см. README.txt).
+import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.5.4/bundle.js";
+
+const logEl = document.getElementById('log');
+const goBtn = document.getElementById('go');
+const appInput = document.getElementById('app');
+const picked = document.getElementById('picked');
+let appFile = null;
+
+function log(msg) { logEl.textContent += msg + "\n"; logEl.scrollTop = logEl.scrollHeight; }
+
+function toBinaryString(buf) {
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    s += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return s;
+}
+
+async function fetchBin(name) {
+  const r = await fetch(name);
+  if (!r.ok) throw new Error("Не найден файл " + name);
+  return toBinaryString(await r.arrayBuffer());
+}
+
+appInput.addEventListener('change', function (e) {
+  appFile = e.target.files[0] || null;
+  if (appFile) {
+    picked.textContent = "Выбран файл: " + appFile.name + " (" + Math.round(appFile.size / 1024) + " КБ)";
+    goBtn.disabled = false;
+  } else {
+    picked.textContent = "Файл не выбран.";
+    goBtn.disabled = true;
+  }
+});
+
+goBtn.addEventListener('click', async function () {
+  goBtn.disabled = true;
+  logEl.textContent = "";
+  let transport = null;
+  try {
+    if (!("serial" in navigator)) throw new Error("Браузер не поддерживает Web Serial. Откройте в Chrome или Edge.");
+    log("Выберите порт прибора в окне браузера...");
+    const device = await navigator.serial.requestPort({ filters: [{ usbVendorId: 0x303a }] });
+    transport = new Transport(device, true);
+    const loader = new ESPLoader({
+      transport,
+      baudrate: 115200,
+      terminal: { clean() {}, writeLine(d) { log(d); }, write(d) { log(d); } }
+    });
+    log("Подключение к прибору...");
+    const chip = await loader.main();
+    log("Чип: " + chip);
+
+    log("Чтение файлов...");
+    const fileArray = [
+      { data: await fetchBin("bootloader.bin"), address: 0x0 },
+      { data: await fetchBin("partitions.bin"), address: 0x8000 },
+      { data: await fetchBin("boot_app0.bin"), address: 0xe000 },
+      { data: toBinaryString(await appFile.arrayBuffer()), address: 0x10000 }
+    ];
+
+    log("Запись (стирания всего флеша нет, NVS не трогается)...");
+    await loader.writeFlash({
+      fileArray,
+      flashSize: "4MB",
+      flashMode: "dio",
+      flashFreq: "80m",
+      eraseAll: false,
+      compress: true,
+      reportProgress: function (index, written, total) {
+        if (written === total) log("Файл " + (index + 1) + " из 4: готово");
+      }
+    });
+    log("Запись завершена. Перезагрузка прибора...");
+    await transport.setDTR(false);
+    await transport.disconnect();
+    log("Готово. Экран должен показать заставку, Wi-Fi остаётся как был.");
+  } catch (err) {
+    log("Ошибка: " + (err && err.message ? err.message : err));
+    if (transport) { try { await transport.disconnect(); } catch (_) {} }
+  } finally {
+    goBtn.disabled = !appFile;
+  }
+});
+</script>
+</body>
+</html>
