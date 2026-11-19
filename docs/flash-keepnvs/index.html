@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flight Radar-D &amp; Clock — обновление по USB (настройки сохраняются)</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10.0.0/dist/web/install-button.js?module"></script>
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:16px system-ui,sans-serif;background:#f6f8f7;color:#16201c}
+main{max-width:560px;margin:auto;padding:16px}
+h1{font-size:22px}
+.box{background:#fff;border:1px solid #cfd9d4;border-radius:12px;padding:14px;margin:12px 0}
+.warn{background:#fff6e0;border-radius:12px;padding:12px;margin:12px 0;color:#5a4300}
+@media (prefers-color-scheme:dark){body{background:#07120f;color:#e5fff5}.box{background:#10251e;border-color:#285541}.warn{background:#2a2410;color:#ffe9b0}}
+</style>
+</head>
+<body>
+<main>
+<h1>Flight Radar-D &amp; Clock — обновление по USB</h1>
+<div class="box"><p>Настройки сохраняются: записываются загрузчик, таблица разделов и приложение, а раздел настроек (NVS) не трогается.</p></div>
+<div class="box">
+<p><b>1. Выберите файл прошивки приложения (.ino.bin) на этом компьютере:</b></p>
+<input type="file" id="bin" accept=".bin">
+<p id="picked" class="small">Файл не выбран.</p>
+</div>
+<div class="box">
+<p><b>2. Установите:</b></p>
+<esp-web-install-button id="btn" manifest="manifest.json">
+  <button slot="activate">Установить</button>
+  <span slot="unsupported">Этот браузер не поддерживает прошивку по USB. Откройте в Chrome или Edge.</span>
+  <span slot="not-allowed">Страница должна открываться по HTTPS.</span>
+</esp-web-install-button>
+</div>
+</main>
+<script>
+// Загрузчик, таблица разделов и boot_app0 лежат рядом со страницей. Приложение выбирается на компьютере.
+// NVS (0x9000) не записывается, поэтому настройки сохраняются.
+document.getElementById('bin').addEventListener('change', function (e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var base = location.href;
+  var manifest = {
+    name: "Flight Radar-D & Clock",
+    new_install_prompt_erase: false,
+    builds: [{
+      chipFamily: "ESP32-C3",
+      parts: [
+        { path: new URL("bootloader.bin", base).href, offset: 0 },
+        { path: new URL("partitions.bin", base).href, offset: 32768 },
+        { path: new URL("boot_app0.bin", base).href, offset: 57344 },
+        { path: URL.createObjectURL(f), offset: 65536 }
+      ]
+    }]
+  };
+  var mUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+  document.getElementById('btn').setAttribute('manifest', mUrl);
+  document.getElementById('picked').textContent = "Выбран файл: " + f.name + " (" + Math.round(f.size / 1024) + " КБ)";
+});
+</script>
+</body>
+</html>
