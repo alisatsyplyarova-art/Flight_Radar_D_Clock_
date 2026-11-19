@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flight Radar-D &amp; Clock — прошивка по USB</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10.0.0/dist/web/install-button.js?module"></script>
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:16px system-ui,sans-serif;background:#f6f8f7;color:#16201c}
+main{max-width:560px;margin:auto;padding:16px}
+h1{font-size:22px}
+.box{background:#fff;border:1px solid #cfd9d4;border-radius:12px;padding:14px;margin:12px 0}
+.warn{background:#fff6e0;border-radius:12px;padding:12px;margin:12px 0}
+@media (prefers-color-scheme:dark){body{background:#07120f;color:#e5fff5}.box{background:#10251e;border-color:#285541}.warn{background:#2a2410;color:#ffe9b0}}
+</style>
+</head>
+<body>
+<main>
+<h1>Flight Radar-D &amp; Clock — обновление по кабелю</h1>
+<div class="box">
+<p>Открывайте страницу в <b>Chrome</b> или <b>Edge</b> на компьютере. Firefox и Safari не поддерживают прошивку по USB.</p>
+<ol>
+<li>Подключите прибор USB-кабелем с передачей данных.</li>
+<li>Нажмите «Установить» и выберите порт прибора.</li>
+<li>Дождитесь окончания записи. Прибор перезагрузится сам.</li>
+</ol>
+<p class="small">Настройки сохраняются: записывается только приложение.</p>
+</div>
+<div class="box">
+<p><b>1. Выберите файл прошивки (.bin) на этом компьютере:</b></p>
+<input type="file" id="bin" accept=".bin">
+<p id="picked" class="small">Файл не выбран.</p>
+</div>
+<div class="box">
+<p><b>2. Установите:</b></p>
+<esp-web-install-button id="btn" manifest="manifest.json">
+  <button slot="activate">Установить 1.1.111</button>
+  <span slot="unsupported">Этот браузер не поддерживает прошивку по USB. Откройте в Chrome или Edge.</span>
+  <span slot="not-allowed">Страница должна открываться по HTTPS.</span>
+</esp-web-install-button>
+</div>
+<div class="warn">Если прибор не виден в списке портов, удерживайте кнопку BOOT при подключении кабеля, затем отпустите и повторите попытку.</div>
+</main>
+<script>
+// Файл выбирается на компьютере и не загружается на сервер: манифест собирается в браузере из blob-ссылки.
+document.getElementById('bin').addEventListener('change', function (e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var binUrl = URL.createObjectURL(f);
+  var manifest = {
+    name: "Flight Radar-D & Clock",
+    version: "1.1.111",
+    new_install_prompt_erase: false,
+    builds: [{ chipFamily: "ESP32-C3", parts: [{ path: binUrl, offset: 65536 }] }]
+  };
+  var mUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+  document.getElementById('btn').setAttribute('manifest', mUrl);
+  document.getElementById('picked').textContent = "Выбран файл: " + f.name + " (" + Math.round(f.size / 1024) + " КБ)";
+});
+</script>
+</body>
+</html>
