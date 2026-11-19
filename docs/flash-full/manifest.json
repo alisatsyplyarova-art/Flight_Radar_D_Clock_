@@ -1,0 +1,15 @@
+{
+  "name": "Flight Radar-D & Clock (полная)",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
